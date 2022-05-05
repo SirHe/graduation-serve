@@ -31,12 +31,10 @@ const { SECRET_KEY, AGING } = require('../config')
 // }
 
 const getToken = (data) => {
-  console.log(data)
   // 生成一个有效期为七天的凭证
   const token = jwt.sign(data, SECRET_KEY, {
     expiresIn: AGING,
   })
-  console.log(token)
   return token
 }
 

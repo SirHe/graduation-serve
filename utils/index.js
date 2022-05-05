@@ -1,5 +1,7 @@
 // 必须引入crypto
 const crypto = require('crypto')
+const auth = require('./auth')
+
 const md5 = (data) => {
   // 以md5的格式创建一个哈希值
   const hash = crypto.createHash('md5')
@@ -15,4 +17,5 @@ const HS256 = (data) => {
 module.exports = {
   md5,
   HS256,
+  ...auth,
 }
