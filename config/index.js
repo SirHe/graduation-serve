@@ -1,5 +1,5 @@
 const corsOptions = {
-  origin: 'http://localhost:8080',
+  origin: 'http://www.hmghome.top:8080',
   optionsSuccessStatus: 200,
 }
 
