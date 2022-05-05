@@ -1,5 +1,5 @@
 git reset --hard
 git pull
-yarn install
+npm i
 kill -2 `lsof -i:3000`
-yarn start 
+npm run start
