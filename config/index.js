@@ -1,5 +1,5 @@
 const corsOptions = {
-  origin: 'http://47.110.224.195:8080',
+  origin: ['http://localhost:8080', 'http://127.0.0.1:8080'],
   optionsSuccessStatus: 200,
 }
 
