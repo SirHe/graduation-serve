@@ -1,5 +1,5 @@
 git reset --hard
 git pull
-npm i
-kill -2 `lsof -i:3000`
-npm run start
+yarn
+kill -2 `lsof -i:8888`
+yarn start
