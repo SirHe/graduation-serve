@@ -16,6 +16,11 @@ const {
   publishArticle: publishArticleM,
   offlineArticle: offlineArticleM,
   getOfflineArticle: getOfflineArticleM,
+  addStar,
+  deleteStar,
+  getStar,
+  getCommentList: getCommentListM,
+  addComment: addCommentM,
 } = require('../models/article')
 
 const getCategoryList = async (req, res, next) => {
@@ -192,9 +197,12 @@ const deleteArticle = async (req, res, next) => {
 }
 
 const getArticleDetail = async (req, res, next) => {
-  const { id } = req.params
+  const { id: articleId } = req.params
+  const userId = req.user?.id || ''
   try {
-    const article = await getArticleDetailM(id)
+    const article = await getArticleDetailM(articleId)
+    const star = await getStar(articleId, userId)
+    article.star = star
     res.send({
       code: 0,
       message: '文章详情获取成功',
@@ -324,6 +332,83 @@ const getOfflineArticle = async (req, res, next) => {
   }
 }
 
+// 文章点赞
+const addArticleStar = async (req, res, next) => {
+  const { id: userId } = req.user
+  const { id: articleId } = req.body
+  try {
+    await addStar(userId, articleId)
+    res.send({
+      code: 0,
+      message: '文章点赞成功',
+    })
+  } catch (err) {
+    const error = new Error('服务器错误，请稍后重试')
+    error.httpStatusCode = 500
+    return next(error)
+  }
+}
+const deleteArticleStar = async (req, res, next) => {
+  const { id: userId } = req.user
+  const { id: articleId } = req.body
+  try {
+    await deleteStar(userId, articleId)
+    res.send({
+      code: 0,
+      message: '文章取消点赞成功',
+    })
+  } catch (err) {
+    const error = new Error('服务器错误，请稍后重试')
+    error.httpStatusCode = 500
+    return next(error)
+  }
+}
+
+// const addArticleCollect = async (req, res, next) => {}
+
+// const deleteArticleCollect = async (req, res, next) => {}
+
+const getCommentList = async (req, res, next) => {
+  const { id, page, size } = req.query
+  try {
+    const { data, total } = await getCommentListM(id, page, size)
+    res.send({
+      code: 0,
+      message: '评论数据获取成功',
+      data,
+      total,
+    })
+  } catch (err) {
+    const error = new Error('服务器错误，请稍后重试')
+    error.httpStatusCode = 500
+    return next(error)
+  }
+}
+
+const addComment = async (req, res, next) => {
+  const { id: userId } = req.user
+  const { recipient, comment, parentId } = req.body
+  const commentObj = {
+    id: v1().replace(/-/g, ''),
+    author: userId,
+    recipient,
+    comment,
+    parent_id: parentId,
+    create_time: new Date().toISOString(),
+  }
+  try {
+    await addCommentM(commentObj)
+    res.send({
+      code: 0,
+      message: '评论成功',
+    })
+  } catch (err) {
+    const error = new Error('服务器错误，请稍后重试')
+    error.httpStatusCode = 500
+    return next(error)
+  }
+}
+
 module.exports = {
   getCategoryList,
   addArticle,
@@ -339,4 +424,10 @@ module.exports = {
   publishArticle,
   offlineArticle,
   getOfflineArticle,
+  addArticleStar,
+  deleteArticleStar,
+  // addArticleCollect,
+  // deleteArticleCollect,
+  getCommentList,
+  addComment,
 }

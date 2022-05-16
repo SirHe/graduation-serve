@@ -14,6 +14,12 @@ const {
   publishArticle,
   offlineArticle,
   getOfflineArticle,
+  addArticleStar,
+  deleteArticleStar,
+  // addArticleCollect,
+  // deleteArticleCollect,
+  getCommentList,
+  addComment,
 } = require('../../service/article')
 const { loginAuth, userAuth } = require('../../middleware/auth')
 
@@ -40,8 +46,21 @@ router.put('/offline', loginAuth, userAuth, offlineArticle)
 // 获取下线文章列表
 router.get('/offline', loginAuth, userAuth, getOfflineArticle)
 
+// 文章点赞
+router.post('/star', loginAuth, addArticleStar)
+router.delete('/star', loginAuth, deleteArticleStar)
+
+// // 文章收藏
+// router.post('/collect', loginAuth, addArticleCollect)
+// router.delete('/collect', loginAuth, deleteArticleCollect)
+
+// 评论
+router.get('/comment', getCommentList)
+// 添加一个新评论
+router.post('/comment', loginAuth, addComment)
+
 //获取文章详情（这个需要放在最后，不然会造成路由误配）
-router.get('/:id', getArticleDetail)
+router.get('/:id', loginAuth, getArticleDetail)
 // 获取文章list
 router.get('/', getArticleList)
 // 添加文章

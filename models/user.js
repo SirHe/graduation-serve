@@ -1,4 +1,4 @@
-const db = require('../utils/MySQL')('graduation_serve')
+const db = require('../db/mysql')
 
 const getUserInfobyUsernameAndPassword = (username, password) => {
   return db

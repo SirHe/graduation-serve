@@ -1,4 +1,10 @@
-const db = require('../utils/MySQL')('graduation_serve')
+const db = require('../db/mysql')
+const redisClient = require('../db/redis')
+const {
+  synchronizeCommentToRedis,
+  synchronizeUserToRedis,
+  synchronizeCommentToMySQL,
+} = require('./module/synchronousData')
 
 const getCategoryAll = () => {
   return db
@@ -110,6 +116,127 @@ const getOfflineArticle = (authorId, page, size) => {
     .queryListWithPaging(page, size)
 }
 
+const addStar = async (user_id, article_id) => {
+  // 文章id做key
+  await redisClient.sAdd(article_id, user_id)
+}
+
+const deleteStar = async (user_id, article_id) => {
+  await redisClient.sRem(article_id, user_id)
+}
+
+const getStar = async (articleId, userId) => {
+  const count = await redisClient.sCard(articleId)
+  if (count <= 0) {
+    // 如果没有，则去mysql数据库拉取数据
+    const data = await db
+      .select('*')
+      .from('article_star')
+      .where('article_id', articleId)
+      .queryList()
+    // 同步redis
+    data.forEach(({ user_id }) => {
+      redisClient.sAdd(articleId, user_id)
+    })
+
+    return {
+      isStar: data.some((item) => item.user_id === userId),
+      count: data.length,
+    }
+  }
+  return {
+    isStar: await redisClient.SISMEMBER(articleId, userId),
+    count,
+  }
+}
+
+const getCommentList = async (id, page, size) => {
+  // 获取全部文章评论列表
+  const articleCommentList = await redisClient.lRange(
+    `article-comment-list-${id}`,
+    0,
+    -1
+  )
+  const total = articleCommentList.length
+  if (total === 0) {
+    synchronizeCommentToRedis()
+    synchronizeUserToRedis()
+  }
+  // 分页
+  const list = articleCommentList.slice((page - 1) * size, page * size)
+  // // 获取文章的评论
+  // const comments = list.map(async (item) => {
+  //   const comment = await redisClient.hGetAll(`article-comment-${item}`)
+  //   const arr = []
+  //   // 默认获取两条子评论
+  //   for (let i = 0; i < 2; i++) {
+  //     const childComment = await redisClient.hGetAll(
+  //       `reply-comment-${comment.id}`
+  //     )
+  //     arr.push(childComment)
+  //   }
+  //   comment.children = arr
+  //   return comment
+  // })
+  const comments = []
+  for (let x = 0; x < list.length; x++) {
+    const comment = await redisClient.hGetAll(`article-comment-${list[x]}`)
+    const replyList = await redisClient.lRange(
+      `reply-comment-list-${list[x]}`,
+      0,
+      1
+    )
+    const arr = []
+    // 默认获取两条子评论
+    for (let i = 0; i < replyList.length; i++) {
+      const childComment = await redisClient.hGetAll(
+        `reply-comment-${replyList[i]}`
+      )
+      arr.push(childComment)
+    }
+    comment.children = arr
+    comments.push(comment)
+  }
+  return {
+    data: comments,
+    total,
+  }
+}
+
+const addComment = async (comment) => {
+  // synchronizeCommentToMySQL()
+  comment = {
+    ...comment,
+    star: 0,
+    author_id: comment.author,
+    recipient_id: comment.recipient,
+    author_nickname: await redisClient.hGet(
+      `user-${comment.author}`,
+      'nickname'
+    ),
+    author_avatar: await redisClient.hGet(`user-${comment.author}`, 'avatar'),
+    recipient_nickname: await redisClient.hGet(
+      `user-${comment.recipient}`,
+      'nickname'
+    ),
+  }
+
+  // 回复评论的评论
+  if (comment.recipient) {
+    Object.entries(comment).forEach(([key, value]) => {
+      redisClient.hSet(`reply-comment-${comment.id}`, key, value ?? '')
+    })
+    // 保存回复list，方便获取list
+    redisClient.rPush(`reply-comment-list-${comment.parent_id}`, comment.id)
+  } else {
+    Object.entries(comment).forEach(([key, value]) => {
+      redisClient.hSet(`article-comment-${comment.id}`, key, value ?? '')
+    })
+    // 保存回复list，方便获取list
+    redisClient.rPush(`article-comment-list-${comment.parent_id}`, comment.id)
+  }
+}
+
 module.exports = {
   getCategoryAll,
   addArticle,
@@ -124,4 +251,9 @@ module.exports = {
   publishArticle,
   offlineArticle,
   getOfflineArticle,
+  addStar,
+  deleteStar,
+  getStar,
+  getCommentList,
+  addComment,
 }

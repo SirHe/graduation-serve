@@ -1,11 +1,20 @@
 const jwt = require('jsonwebtoken')
-const { SECRET_KEY } = require('../config/index')
+const { SECRET_KEY, WHITE_LIST } = require('../config/index')
 const { getUserMenu } = require('../models/user')
 
 // 登录鉴权
 const loginAuth = (req, res, next) => {
   const token = req.headers['authorization']
+
   if (token == undefined) {
+    const path = req.originalUrl.split('?').shift()
+    const method = req.method.toUpperCase()
+    const isPass = WHITE_LIST.some(
+      (item) => item.method === method && path.indexOf(item.url) >= 0
+    )
+    if (isPass) {
+      return next()
+    }
     return res.status(401).send({
       code: 1,
       message: '未登录',

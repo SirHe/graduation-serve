@@ -7,8 +7,16 @@ const SECRET_KEY = 'test123'
 
 const AGING = 60 * 60 * 24 * 7
 
+const WHITE_LIST = [
+  {
+    method: 'GET',
+    url: '/article/',
+  },
+]
+
 module.exports = {
   corsOptions,
   SECRET_KEY,
   AGING,
+  WHITE_LIST,
 }
