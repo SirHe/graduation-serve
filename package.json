@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "nodemon ./bin/www"
+    "start": "nodemon ./bin/www",
+    "update": "node ./scripts/push-shell.js"
   },
   "dependencies": {
     "ali-mysql-client": "^1.0.7",

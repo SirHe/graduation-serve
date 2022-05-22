@@ -13,7 +13,7 @@ app.get('/restart', (req, res) => {
   shell.exec('yarn')
   shell.exec('forever stop 1')
   // shell.exec('forever start auto.js')
-  shell.exec('forever start ./bin/www')
+  shell.exec('forever start ../bin/www')
   // shell.exit(1)
 })
 
