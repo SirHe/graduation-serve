@@ -11,7 +11,7 @@ app.get('/restart', (req, res) => {
   // shell.exec('./auto.sh')
   shell.exec('git pull')
   shell.exec('yarn')
-  shell.exec('forever stopall')
+  shell.exec('forever stop 1')
   shell.exec('forever start ./bin/www')
   // shell.exit(1)
 })
