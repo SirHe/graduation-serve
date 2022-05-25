@@ -64,10 +64,59 @@ const getUserRoles = (id) => {
     .execute()
 }
 
+const getClientMenu = (id) => {
+  return db
+    .sql(
+      `
+      SELECT
+      m.url
+      FROM
+      user u,
+      role r,
+      user_role ur,
+      menu m,
+      menu_role mr
+      WHERE
+      ur.user_id = u.id
+      AND
+      ur.role_id = r.id
+      AND
+      r.id = mr.role_id
+      AND
+      mr.menu_id = m.id
+      AND
+      m.type = 'client'
+      AND
+      u.id = '${id}'
+  `
+    )
+    .execute()
+}
+
+const add = (userInfo) => {
+  return db.insert('user', userInfo).execute()
+}
+const getList = (page, size) => {
+  return db.select('*').from('user').queryListWithPaging(page, size)
+}
+
+const deleteUser = (id) => {
+  return db.delete('user').where('id', id).execute()
+}
+
+const toggleUserState = (id, enabled) => {
+  return db.update('user', { enabled }).where('id', id).execute()
+}
+
 module.exports = {
   getUserInfobyUsernameAndPassword,
   getUserInfoById,
   updateUserInfo,
   getUserMenu,
   getUserRoles,
+  getClientMenu,
+  add,
+  getList,
+  deleteUser,
+  toggleUserState,
 }
