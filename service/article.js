@@ -21,6 +21,11 @@ const {
   getStar,
   getCommentList: getCommentListM,
   addComment: addCommentM,
+  searchArticle: searchArticleM,
+  searchTips,
+  addReport: addReportM,
+  getReportList: getReportListM,
+  deleteReport: deleteReportM,
 } = require('../models/article')
 
 const getCategoryList = async (req, res, next) => {
@@ -409,6 +414,82 @@ const addComment = async (req, res, next) => {
   }
 }
 
+const searchArticle = async (req, res, next) => {
+  const { key, isTips, order } = req.query
+  let data = []
+  try {
+    if (JSON.parse(isTips)) {
+      data = await searchTips(key)
+    } else {
+      data = await searchArticleM(key, order)
+    }
+    res.send({
+      code: 0,
+      data,
+      // message: '评论成功',
+    })
+  } catch (err) {
+    const error = new Error('服务器错误，请稍后重试')
+    error.httpStatusCode = 500
+    return next(error)
+  }
+}
+
+const addReport = async (req, res, next) => {
+  const { id } = req.user
+  const { reported, reason, tableName } = req.body
+  console.log(reported, id, reason, tableName)
+  const reportInfo = {
+    id: v1().replace(/-/g, ''),
+    report: id,
+    reported,
+    reason,
+    table_name: tableName,
+  }
+  try {
+    await addReportM(reportInfo)
+    res.send({
+      code: 0,
+      message: '举报成功',
+    })
+  } catch (err) {
+    const error = new Error('服务器错误，请稍后重试')
+    error.httpStatusCode = 500
+    return next(error)
+  }
+}
+
+const getReportList = async (req, res, next) => {
+  const { page, size } = req.query
+  try {
+    const { rows, total } = await getReportListM(page, size)
+    res.send({
+      code: 0,
+      data: rows,
+      total,
+      message: '举报列表获取成功',
+    })
+  } catch (err) {
+    const error = new Error('服务器错误，请稍后重试')
+    error.httpStatusCode = 500
+    return next(error)
+  }
+}
+
+const deleteReport = async (req, res, next) => {
+  try {
+    await deleteReportM(req.body.id)
+    res.send({
+      code: 0,
+      message: '举报删除成功',
+    })
+  } catch (err) {
+    const error = new Error('服务器错误，请稍后重试')
+    error.httpStatusCode = 500
+    return next(error)
+  }
+}
+
 module.exports = {
   getCategoryList,
   addArticle,
@@ -430,4 +511,8 @@ module.exports = {
   // deleteArticleCollect,
   getCommentList,
   addComment,
+  searchArticle,
+  addReport,
+  getReportList,
+  deleteReport,
 }

@@ -93,8 +93,19 @@ const getClientMenu = (id) => {
     .execute()
 }
 
-const add = (userInfo) => {
-  return db.insert('user', userInfo).execute()
+const add = async (userInfo) => {
+  const trans = await db.useTransaction()
+  const { role, id } = userInfo
+  delete userInfo.role
+  try {
+    // 数据库操作
+    await trans.insert('user', userInfo).execute()
+    await trans.insert('user_role', { user_id: id, role_id: role }).execute()
+    await trans.commit()
+  } catch (e) {
+    await trans.rollback()
+  }
+  return
 }
 const getList = (page, size) => {
   return db.select('*').from('user').queryListWithPaging(page, size)

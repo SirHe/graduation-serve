@@ -26,10 +26,11 @@ const login = async (req, res, next) => {
   }
 
   try {
-    const { id } = await getUserInfobyUsernameAndPassword(
+    const userInfo = await getUserInfobyUsernameAndPassword(
       username,
       md5(password)
     )
+    const id = userInfo.id
 
     const roles = await getUserRoles(id)
     const isAdmin = roles.some((role) => role.name === 'admin')
@@ -43,6 +44,7 @@ const login = async (req, res, next) => {
         tokenHead: 'Bearer',
         token: getToken({ id, isAdmin }),
         menus: menus.map((menu) => menu.url),
+        userInfo,
       },
     })
   } catch (err) {
@@ -108,7 +110,8 @@ const addUser = async (req, res, next) => {
   const fromData = new multiparty.Form()
   fromData.parse(req, async (err, fields, files) => {
     // 数据库对应修改字段
-    const { nickname, brief, phone, email, address } = fields
+    const { nickname, brief, phone, email, address, role, username, password } =
+      fields
     const userInfo = {
       id: v1().replace(/-/g, ''),
       email: email[0],
@@ -116,6 +119,9 @@ const addUser = async (req, res, next) => {
       brief: brief[0],
       phone: phone[0],
       address: address[0],
+      role: role[0],
+      username: username[0],
+      password: md5(password[0]),
     }
     if (files.avatarFile) {
       // 保存图片
@@ -131,7 +137,7 @@ const addUser = async (req, res, next) => {
     }
     try {
       await add(userInfo)
-      res.send({
+      await res.send({
         code: 0,
         message: '用户添加成功',
       })

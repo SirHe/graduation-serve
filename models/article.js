@@ -237,6 +237,84 @@ const addComment = async (comment) => {
   }
 }
 
+const searchArticle = (key, order) => {
+  return db.select('*').from('article').where('title', key, 'like').queryList()
+}
+
+const searchTips = (key) => {
+  return db
+    .select('id,title')
+    .from('article')
+    .where('title', key, 'like')
+    .queryList()
+}
+
+const addReport = (reportInfo) => {
+  return db.insert('article_report', reportInfo).execute()
+}
+
+const getReportList = async (page, size) => {
+  const list1 = await db
+    .sql(
+      `
+  SELECT
+  DISTINCT
+  ar.id,
+  u1.nickname report,
+  u2.id reported_id,
+  u2.nickname reported,
+  ac.comment content,
+  ar.reason
+  FROM
+  article_report ar,
+  user u1,
+  user u2,
+  article_comment ac
+  WHERE
+  ar.report = u1.id
+  AND
+  ar.reported = ac.id
+  AND
+  ac.author = u2.id
+  `
+    )
+    .execute()
+  const list2 = await db
+    .sql(
+      `
+  SELECT
+  DISTINCT
+  ar.id,
+  u1.nickname report,
+  u2.id reported_id,
+  u2.nickname reported,
+  a.title content,
+  ar.reason
+  FROM
+  article_report ar,
+  user u1,
+  user u2,
+  article a
+  WHERE
+  ar.report = u1.id
+  AND
+  ar.reported = a.id
+  AND
+  a.author = u2.id
+  `
+    )
+    .execute()
+  const list = [...list1, ...list2]
+  return {
+    rows: list.slice((page - 1) * size, page * size),
+    total: list.length,
+  }
+}
+
+const deleteReport = (id) => {
+  return db.delete('article_report').where('id', id).execute()
+}
+
 module.exports = {
   getCategoryAll,
   addArticle,
@@ -256,4 +334,9 @@ module.exports = {
   getStar,
   getCommentList,
   addComment,
+  searchArticle,
+  searchTips,
+  addReport,
+  getReportList,
+  deleteReport,
 }
