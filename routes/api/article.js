@@ -24,6 +24,7 @@ const {
   addReport,
   getReportList,
   deleteReport,
+  getSpecialList,
 } = require('../../service/article')
 const { loginAuth, userAuth } = require('../../middleware/auth')
 
@@ -69,6 +70,8 @@ router.get('/search', searchArticle)
 router.post('/report', loginAuth, addReport)
 router.get('/report', loginAuth, getReportList)
 router.delete('/report', loginAuth, deleteReport)
+
+router.get('/special', getSpecialList)
 
 //获取文章详情（这个需要放在最后，不然会造成路由误配）
 router.get('/:id', loginAuth, getArticleDetail)

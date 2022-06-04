@@ -315,6 +315,14 @@ const deleteReport = (id) => {
   return db.delete('article_report').where('id', id).execute()
 }
 
+const getSpecialList = (order) => {
+  return db
+    .select('*')
+    .from('article')
+    .orderby(`${order} desc`)
+    .queryListWithPaging(1, 5)
+}
+
 module.exports = {
   getCategoryAll,
   addArticle,
@@ -339,4 +347,5 @@ module.exports = {
   addReport,
   getReportList,
   deleteReport,
+  getSpecialList,
 }

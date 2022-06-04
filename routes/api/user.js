@@ -7,6 +7,9 @@ const {
   getUserList,
   deleteUser,
   toggleUserState,
+  sendCode,
+  checkCode,
+  addPassword,
 } = require('../../service/user')
 const { loginAuth, userAuth } = require('../../middleware/auth')
 
@@ -22,6 +25,10 @@ router.post('/add', loginAuth, userAuth, addUser)
 // 获取用户list
 router.get('/', loginAuth, getUserList)
 router.delete('/', loginAuth, deleteUser)
+
+router.post('/sendCode', sendCode)
+router.post('/checkCode', checkCode)
+router.post('/addPassword', addPassword)
 
 router.put('/state', loginAuth, toggleUserState)
 

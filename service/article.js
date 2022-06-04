@@ -26,6 +26,7 @@ const {
   addReport: addReportM,
   getReportList: getReportListM,
   deleteReport: deleteReportM,
+  getSpecialList: getSpecialListM,
 } = require('../models/article')
 
 const getCategoryList = async (req, res, next) => {
@@ -490,6 +491,32 @@ const deleteReport = async (req, res, next) => {
   }
 }
 
+const getSpecialList = async (req, res, next) => {
+  const type = req.query.type
+  if (type === 'carousel') {
+    const { rows } = await getSpecialListM('create_time')
+    return res.send({
+      code: 0,
+      data: rows,
+      message: '轮播图文章获取成功',
+    })
+  } else if (type === 'new') {
+    const { rows } = await getSpecialListM('create_time')
+    return res.send({
+      code: 0,
+      data: rows,
+      message: '最新文章获取成功',
+    })
+  } else {
+    const { rows } = await getSpecialListM('pageviews')
+    return res.send({
+      code: 0,
+      data: rows,
+      message: '最受欢迎文章获取成功',
+    })
+  }
+}
+
 module.exports = {
   getCategoryList,
   addArticle,
@@ -515,4 +542,5 @@ module.exports = {
   addReport,
   getReportList,
   deleteReport,
+  getSpecialList,
 }

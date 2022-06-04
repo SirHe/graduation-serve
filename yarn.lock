@@ -859,10 +859,10 @@ negotiator@0.6.3:
   resolved "https://registry.npmmirror.com/negotiator/-/negotiator-0.6.3.tgz#58e323a72fedc0d6f9cd4d31fe49f51479590ccd"
   integrity sha512-+EUsqGPLsM+j/zdChZjsnX51g4XrHFOIXwfnCVPGlQk/k5giakcKsuxCObBRu6DSm9opw/O6slWbJdghQM4bBg==
 
-nodemailer@^6.7.4:
-  version "6.7.4"
-  resolved "https://registry.npmmirror.com/nodemailer/-/nodemailer-6.7.4.tgz#28771bda3dda8f2dad1912aca0f8727ce7f09d89"
-  integrity sha512-TBSS3qS8WG45ycUwEvEA/3UM1o3sLz9jUl4TPUKPz4ImWWM6UgRCb5pLO+HOouDKEj57yNLOrzQlO8+9IjWZoA==
+nodemailer@^6.7.5:
+  version "6.7.5"
+  resolved "https://registry.npmmirror.com/nodemailer/-/nodemailer-6.7.5.tgz#b30b1566f5fa2249f7bd49ced4c58bec6b25915e"
+  integrity sha512-6VtMpwhsrixq1HDYSBBHvW0GwiWawE75dS3oal48VqRhUvKJNnKnJo2RI/bCVQubj1vgrgscMNW4DHaD6xtMCg==
 
 object-assign@^4:
   version "4.1.1"
@@ -958,6 +958,11 @@ proxy-addr@~2.0.4:
   dependencies:
     forwarded "0.2.0"
     ipaddr.js "1.9.1"
+
+qcloudsms_js@^0.1.1:
+  version "0.1.1"
+  resolved "https://registry.npmmirror.com/qcloudsms_js/-/qcloudsms_js-0.1.1.tgz#e042b683ba1312a20d7dd0322446f20fd3dc644a"
+  integrity sha512-ewdlD32XF0BkV5sGNCFHCR9FSf6fi6PijJGX1YkowFziycYUyoCThDWKM0aeZG6kSQ1y8qHHBYFhAl7JTSlhuQ==
 
 qs@6.10.3:
   version "6.10.3"

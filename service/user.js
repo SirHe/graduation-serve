@@ -1,8 +1,13 @@
 const multiparty = require('multiparty')
 const path = require('path')
 const fs = require('fs')
+const jwt = require('jsonwebtoken')
 const { v1 } = require('uuid')
 const { getToken, md5 } = require('../utils')
+const { SECRET_KEY } = require('../config/index')
+const sendEmail = require('../utils/sendEmail')
+const sendSMS = require('../utils/sendSMS')
+// const axios = require('axios')
 const {
   getUserInfobyUsernameAndPassword,
   getUserInfoById,
@@ -201,6 +206,93 @@ const toggleUserState = async (req, res, next) => {
   }
 }
 
+const sendCode = async (req, res, next) => {
+  const { phone, email, type } = req.body
+  const code = Math.floor(Math.random() * (9999 - 1000)) + 1000
+  if (type === 'email') {
+    try {
+      await sendEmail(
+        email,
+        '智慧乡村信息服务平台',
+        `<p>您好，欢迎注册智慧乡村信息服务平台。您的验证码是：<b>${code}</b>，如果不是本人操作，请忽略本邮件。</p>`
+      )
+      res.send({
+        code: 0,
+        message: '验证码发送成功！',
+        data: {
+          tokenHead: 'Bearer',
+          token: getToken({ code, email }),
+        },
+      })
+    } catch (err) {
+      console.log(err)
+    }
+  } else if (type === 'phone') {
+    try {
+      await sendSMS(phone, code)
+      res.send({
+        code: 0,
+        message: '验证码发送成功！',
+        data: {
+          tokenHead: 'Bearer',
+          token: getToken({ code, phone }),
+        },
+      })
+    } catch (err) {
+      console.log(err)
+    }
+  }
+}
+
+const checkCode = (req, res, next) => {
+  const token = req.headers['authorization']
+  const { code: code1 } = jwt.verify(token.split(' ')[1], SECRET_KEY)
+  const { code: code2 } = req.body
+  if (Number(code1) !== Number(code2)) {
+    res.send({
+      code: -1,
+      message: '验证码错误',
+    })
+  } else {
+    res.send({
+      code: 0,
+      message: '验证码正确',
+    })
+  }
+}
+
+const addPassword = async (req, res, next) => {
+  const token = req.headers['authorization']
+  const { phone = '', email = '' } = jwt.verify(token.split(' ')[1], SECRET_KEY)
+  const { password1, password2 } = req.body
+
+  const userInfo = {
+    id: v1().replace(/-/g, ''),
+    email,
+    phone,
+    role: 3,
+    password: md5(password1),
+  }
+  try {
+    await add(userInfo)
+    res.send({
+      code: 0,
+      message: '注册成功',
+    })
+  } catch (err) {
+    console.log(err)
+    res.status(500).send({
+      message: '服务器错误，请稍后重试',
+    })
+  }
+  // if (password1 !== password2) {
+  //   return res.send({
+  //     code: -1,
+  //     message:
+  //   })
+  // }
+}
+
 module.exports = {
   login,
   getUserInfo,
@@ -209,4 +301,7 @@ module.exports = {
   getUserList,
   deleteUser,
   toggleUserState,
+  sendCode,
+  checkCode,
+  addPassword,
 }
