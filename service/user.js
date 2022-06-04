@@ -35,6 +35,7 @@ const login = async (req, res, next) => {
       username,
       md5(password)
     )
+    console.log(userInfo)
     const id = userInfo.id
 
     const roles = await getUserRoles(id)

@@ -1,12 +1,22 @@
 const db = require('../db/mysql')
 
 const getUserInfobyUsernameAndPassword = (username, password) => {
-  return db
-    .select('*')
-    .from('user')
-    .where('username', username)
-    .where('password', password)
-    .queryRow()
+  console.log(username, password)
+  return (
+    db
+      .select('*')
+      .from('user')
+      .where('username', username)
+      .where([
+        { field: 'phone', value: username, join: 'or' },
+        { field: 'email', value: username, join: 'or' },
+      ])
+      // .where('phone', username, 'eq', 'ifHave', 'or')
+      // .where('email', username, 'eq', 'ifHave', 'or')
+      .where('password', password)
+      .where('enabled', 1)
+      .queryRow()
+  )
 }
 
 const getUserInfoById = (id) => {
